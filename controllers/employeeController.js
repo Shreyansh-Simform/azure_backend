@@ -1,30 +1,44 @@
-const db = require('../models/db');
+const sql = require('../models/db'); // your db.js should export the `sql` object
 
 // Get All Employees
-exports.getEmployees = (req, res) => {
-  db.query('SELECT * FROM employees', (err, results) => {
-    if (err) throw err;
-    res.json(results);
-  });
+exports.getEmployees = async (req, res) => {
+  try {
+    const result = await sql.query`SELECT * FROM employees`;
+    res.json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 };
 
 // Add Employee
-exports.addEmployee = (req, res) => {
+exports.addEmployee = async (req, res) => {
   const { name, age, department } = req.body;
-  const query = 'INSERT INTO employees (name, age, department) VALUES (?, ?, ?)';
-  db.query(query, [name, age, department], (err) => {
-    if (err) throw err;
+  try {
+    await sql.query`
+      INSERT INTO employees (name, age, department) 
+      VALUES (${name}, ${age}, ${department})
+    `;
     res.send('Employee Added');
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 };
 
 // Update Employee
-exports.updateEmployee = (req, res) => {
+exports.updateEmployee = async (req, res) => {
   const { id, name, age, department } = req.body;
-  const query = 'UPDATE employees SET name=?, age=?, department=? WHERE id=?';
-  db.query(query, [name, age, department, id], (err) => {
-    if (err) throw err;
+  try {
+    await sql.query`
+      UPDATE employees 
+      SET name=${name}, age=${age}, department=${department} 
+      WHERE id=${id}
+    `;
     res.send('Employee Updated');
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 };
 
